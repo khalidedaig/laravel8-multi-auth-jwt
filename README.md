@@ -27,7 +27,7 @@ POST	v1/auth/beneficiary/register
 
 POST	v1/auth/beneficiary/login
 
-GET	      v1/auth/beneficiary/me
+GET	  v1/auth/beneficiary/me
 
 POST	v1/auth/beneficiary/refresh
 
