@@ -74,7 +74,8 @@ class LoginController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60,
             'user_id' => auth()->user()->id,
             'role' => auth()->user()->role,
-            'name' => auth()->user()->name,
+            'firstname' => auth()->user()->firstname,
+            'lastname' => auth()->user()->lastname,
             'email' => auth()->user()->email,
             'type' => 'user' //api_user guard 
         ]);

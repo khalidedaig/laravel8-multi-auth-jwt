@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Beneficiary;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Validator;
 
 
@@ -48,26 +49,19 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'firstname' => 'required|string|between:2,50',
-            'lastname' => 'required|string|between:2,50',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
-        ]);
+        try {
+            $credentials = $request->only('firstname', 'lastname', 'email', 'password');
 
-        if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
+            if ($beneficiary = Beneficiary::create($credentials)) {
+                return response()->json([
+                    'message' => 'beneficiary successfully registered',
+                    'beneficiary' => $beneficiary
+                ], 201);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['message' => 'something that is not correct ! trying again'], 401);
         }
-
-        $beneficiary = Beneficiary::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
-
-        return response()->json([
-            'message' => 'beneficiary successfully registered',
-            'beneficiary' => $beneficiary
-        ], 201);
+        
     }
 
 

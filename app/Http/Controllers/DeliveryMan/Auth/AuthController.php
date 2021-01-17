@@ -5,6 +5,8 @@ namespace App\Http\Controllers\DeliveryMan\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DeliveryMan;
+use App\Requests\RegisterUserValidation;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Validator;
 
 
@@ -16,7 +18,7 @@ class AuthController extends Controller
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api_deliver_man', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api_delivery_man', ['except' => ['login', 'register']]);
     }
 
     /**
@@ -46,27 +48,20 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'firstname' => 'required|string|between:2,50',
-            'lastname' => 'required|string|between:2,50',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
-        ]);
+    public function register(RegisterUserValidation $request) {
+    
+        try {
+            $credentials = $request->only('firstname', 'lastname', 'email', 'password');
 
-        if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
+            if($DeliveryMan = DeliveryMan::create($credentials)){
+                return response()->json([
+                    'message' => 'Delivery man successfully registered',
+                    'DeliveryMan' => $DeliveryMan
+                ], 201);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['message' => 'something that is not correct ! trying again'], 401);
         }
-
-        $DeliveryMan = DeliveryMan::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
-
-        return response()->json([
-            'message' => 'Delivery man successfully registered',
-            'DeliveryMan' => $DeliveryMan
-        ], 201);
     }
 
 
